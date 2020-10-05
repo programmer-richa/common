@@ -1,5 +1,10 @@
 package forms
 
+import (
+	"bytes"
+	"encoding/gob"
+)
+
 // fieldModifier has a type of function that accepts a *Field
 // functional builder
 type fieldModifier func(*Field)
@@ -7,6 +12,13 @@ type fieldModifier func(*Field)
 // FieldBuilder holds a list of functions that accepts a *Field
 type FieldBuilder struct {
 	actions []fieldModifier
+}
+
+func NewFieldBuilder(fieldType string, label string) *FieldBuilder {
+	return (&FieldBuilder{}).
+		FieldType(fieldType).
+		Loader(StringLoader).
+		Label(label)
 }
 
 func (fb *FieldBuilder) Name(name string) *FieldBuilder {
@@ -186,4 +198,20 @@ func (fb *FieldBuilder) Build() *Field {
 		a(&f)
 	}
 	return &f
+}
+
+// Creating Copy of Field
+// Prototype Design pattern to create copy of form field without initialising
+// whole object from scratch
+func (f *FieldBuilder) DeepCopy() *FieldBuilder {
+	// note: no error handling below
+	b := bytes.Buffer{}
+	e := gob.NewEncoder(&b)
+	_ = e.Encode(f)
+	// peek into structure
+	//fmt.Println(string(b.Bytes()))
+	d := gob.NewDecoder(&b)
+	result := FieldBuilder{}
+	_ = d.Decode(&result)
+	return &result
 }

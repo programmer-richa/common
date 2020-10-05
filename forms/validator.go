@@ -1,11 +1,12 @@
 package forms
 
 import (
-	"constants"
 	"errors"
 	"regexp"
 	"strings"
-	"validator"
+
+	"github.com/programmer-richa/common/constants"
+	"github.com/programmer-richa/common/validator"
 )
 
 // ValidatorFunc specifies the criteria of testing the field data.
