@@ -1,0 +1,90 @@
+{{define "form"}}
+    {{$form:=.}}
+    {{$fieldNames:=$form.FieldNames}}
+    <div class="loader" id="{{$form.Name}}Form-loader" style="display:none;">
+    </div>
+    <form action="{{$form.Action}}"  method="{{$form.Method}}" name="{{$form.Name}}" id="{{$form.Name}}">
+        <div class="row">
+            <label id="{{$form.Name}}-error" class="error" for="{{$form.Name}}"></label>
+            <label id="{{$form.Name}}-success" class="success" for="{{$form.Name}}"></label>
+            {{/* Loop over range of field names to present form elements in same sequence as they are added */}}
+            {{range $fieldName := $fieldNames}}
+            {{/* Accessing form element from the $form.Fields map */}}
+            {{$field:= index $form.Fields $fieldName}}
+            {{$eventNames:=$field.EventNames}}
+            {{/* https://www.calhoun.io/intro-to-templates-p3-functions/ for reference */}}
+            {{if or (or (eq $field.FieldType  "text")  (eq $field.FieldType  "password"))   (eq $field.FieldType  "email") }}
+                <div class="form-group col-sm-{{$field.Width}}">
+                    {{ if not  $field.HideLabel}}
+                        <label for="{{$fieldName}}">{{$field.Label}}
+                            {{if $field.Required}} <abbr class="required">*</abbr>{{end}}
+                        </label>
+                    {{end}}
+                    <input class="form-control" type="{{$field.FieldType}}" value="{{$field.Value}}" id="{{$fieldName}}"
+                           name="{{$fieldName}}" placeholder="{{$field.Placeholder}}"
+                            {{if (ne $field.Placeholder "")}} placeholder="{{$field.Placeholder}}" {{end}}
+                            {{range $eventName := $eventNames}}
+                                {{$func:= index $field.JsFunctions  $eventName}}
+                                data-{{$eventName}}="{{$func}}" {{end}}>
+                </div>
+            {{end}}
+            {{if eq $field.FieldType  "checkbox"}}
+                <div class="form-group col-sm-{{$field.Width}}">
+                    <div class="form-check">
+                        <input class="form-check-input" type="{{$field.FieldType}}"  name="{{$fieldName}}"
+                               id="{{$fieldName}}" {{if $field.Selected}} checked="checked"{{end}}
+                                {{range $eventName := $eventNames}}
+                            {{$func:= index $field.JsFunctions  $eventName}}
+                            data-{{$eventName}}="{{$func}}" {{end}}>
+                        <label class="form-check-label" for="{{$fieldName}}">{{$field.Label}}</label>
+                    </div>
+                </div>
+            {{end}}
+            {{if eq $field.FieldType  "radio_group"}}
+                <div class="form-group col-sm-{{$field.Width}}">
+                    <label for="{{$fieldName}}">{{$field.Label}}
+                        {{if $field.Required}} <abbr class="required">*</abbr>{{end}}
+                    </label>
+                    <div class="radio">
+                        {{$radioNames:=$field.FieldNames}}
+                        {{range $radioName := $radioNames}}
+                            {{$radio:= index $field.Fields $radioName}}
+                            <input class="" type="{{$radio.FieldType}}"  name="{{$fieldName}}"
+                                   id="{{$fieldName}}" {{if $radio.Selected}} checked="checked"{{end}}  {{range $eventName := $eventNames}}
+                                {{$func:= index $field.JsFunctions  $eventName}}
+                            data-{{$eventName}}="{{$func}}" {{end}}>
+                            {{$radio.Label}}
+                        {{end}}
+                    </div>
+
+                </div>
+            {{end}}
+            {{if or (eq $field.FieldType  "button") (eq $field.FieldType  "submit")}}
+            {{if $form.DisplayInModal}}
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+            <button type="{{$field.FieldType}}" value="{{$field.Label}}" class="btn btn-primary"
+                    name="{{$fieldName}}" id="{{$fieldName}}"
+               {{range $eventName := $eventNames}}
+                {{$func:= index $field.JsFunctions  $eventName}}
+                data-{{$eventName}}="{{$func}}" {{end}}>  {{$field.Label}}</button>
+        </div>
+        {{else}}
+            <div class="form-group col-sm-{{$field.Width}}">
+                <button type="{{$field.FieldType}}" value="{{$field.Label}}" class="btn btn-primary"
+                        name="{{$fieldName}}" id="{{$fieldName}}" {{range $eventName := $eventNames}}
+                    {{$func:= index $field.JsFunctions  $eventName}}
+                    data-{{$eventName}}="{{$func}}" {{end}} >{{$field.Label}}</button>
+            </div>
+        {{end}}
+        {{end}}
+        {{end}}
+        {{if $form.DisplayInModal}}
+        {{else}}
+            </div>
+        {{end}}
+    </form>
+{{end}}
+{{template "form" .}}

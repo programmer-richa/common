@@ -1,6 +1,8 @@
 package forms
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 )
@@ -78,4 +80,20 @@ func (f *Field) validate(value interface{}) error {
 		}
 	}
 	return nil
+}
+
+// Creating Copy of Field
+// Prototype Design pattern to create copy of form field without initialising
+// whole object from scratch
+func (f *Field) DeepCopy() *Field {
+	// note: no error handling below
+	b := bytes.Buffer{}
+	e := gob.NewEncoder(&b)
+	_ = e.Encode(f)
+	// peek into structure
+	// fmt.Println(string(b.Bytes()))
+	d := gob.NewDecoder(&b)
+	result := Field{}
+	_ = d.Decode(&result)
+	return &result
 }
